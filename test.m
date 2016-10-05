@@ -1,4 +1,4 @@
-function val = ndb63_myquad( k )
+function val = ajt253_myquad( k )
 %<NET_ID>_MYQUAD   My quadrature command 
 % 
 % This function takes in an integer k between 1 and 30. The command is 
@@ -22,11 +22,10 @@ func = {
     @(x) 1 ./ (x.^2 + 1.005)
     @(x) cos(x) + 1e-2*randn(size(x))
     @(x) 25 * exp(-25*x)
-    %@(x) (exp(10*x)-1)./exp((101/10)*x)
-    @(x) (exp(x)).^(-1/10) - (exp(x)).^(9/10)./(exp(11*x))
+    @(x) (exp(10*x)-1)./exp((101/10)*x)
     @(x) x.^2+x+1
     @(x) floor(exp(x))
-    @(x) x.^(3/2)
+    @(x) sqrt( x.^3 )
     @(x) 1 ./ sqrt(x)
     @(x) (x < 1) .* (x + 1) + ...
          (1 <= x & x <= 3) .* (3 - x) + ...
@@ -93,53 +92,36 @@ b = interval(k,2);
 % other integration methods that you should employ. You may also not want to use
 % the trapezoidal rule.  This is just an example script:
 
-if ( k == 1 || k==10 )
-    val = GaussQuadrature(30,f, a, b);
-elseif ( k == 12 || k==16 )
-    val = ClenshawCurtis(2000,f, a, b);
-elseif ( k == 19 || k==18)
-    val = ClenshawCurtis(5000,f, a, b);
-elseif ( k == 6 || k==15 || k==22 || k==26 )
-    val = ClenshawCurtis(270,f, a, b);
-elseif ( k == 9 )
-    val = ClenshawCurtis(600,f, a, b );
-elseif ( k == 29 )
-    val = ClenshawCurtis(4600,f, a, b );
-else
-    fprintf('Not yet defined a quadrature');
-    val = NaN; 
-end
+%if ( k == 1 || k == 21 )
+    
+    % DO GAUSSQUADRATURE 
+    %val = GaussQuadrature(f, a, b);
+    
+%elseif (k == 20 || k == 3 ) 
+    
+    % DO COMPOSITE TRAPEZOIDAL RULE 
+    %val = compositeTrapezoidal(f, a, b);
+    
+%elseif (k == 22 || k == 4 )
+    % DO LEAST SQUARES FIT 
+    %val = leastSquaresFit( f, a, b);
+%else
+    % I am going to miss these integrals: 
+    %val = NaN; 
+%end
+
+%end
+
+function val = GaussQuadrature( f, a, b ) 
+% GAUSSQUADRATURE(F, A, B) 
+
+% This command computes the integral of F on [A, B] using Gaussian
+% quadrature. 
 
 end
 
-function val = ClenshawCurtis(p, f, a, b ) 
-tic
-format long;
-[x,c]=fclencurt(p,a,b);
-g=f(x);
-val = sum(c.*g);
-toc
-end
+function val = ClenshawCurtis( f, a, b ) 
 
-function val = GaussKronrod(p, f, a, b ) 
-tic
-format long;
-[x,c]=GKIntP(p);
-d=b-a;
-c=c*d/2;
-x=(d*x+b+a)/2;
-g=f(x);
-val = sum(c.*g);
-toc
-end
-
-function val = GaussQuadrature(p, f, a, b ) 
-tic
-format long;
-[x,c]=lgwt(p,a,b);
-g=f(x);
-val = sum(c.*g);
-toc
 end
 
 function val = leastSquaresFit( f, a, b ) 
