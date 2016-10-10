@@ -79,7 +79,8 @@ interval = [ 0 1 ;
     -1 1;
     0 1;
     -.5 .5;
-    0 1];
+    0 1
+    ];
 
 % Put into variables f, a, b:
 f = func{k};
@@ -91,47 +92,42 @@ b = interval(k,2);
 % other integration methods that you should employ. You may also not want to use
 % the trapezoidal rule.  This is just an example script:
 
-if ( k == 12  )
+if ( k == 1  || k == 6  ||k==10   || k==15    || k==27 || k==29 )
     tic
-    val = ClenshawCurtis(2000,f, a, b);
+    val = GaussQuadrature(200,f, a, b);
     toc
-elseif ( k==10  )
+elseif (  k==8 )
     tic
-    val = ClenshawCurtis(5000,f, a, b);
+    val = GaussQuadrature(50,f, a, b);
     toc
-elseif (  k==19  )
+elseif (  k==9 || k==22 || k==26)
     tic
-    val = real(ClenshawCurtis(5000,f, a, b));
+    val = GaussQuadrature(188,f, a, b);
     toc
-elseif ( k == 1 ||  k == 6 || k==8 ||k == 9   || k==15   || k==22 || k==26   )
+elseif (  k==12 )
     tic
-    val = ClenshawCurtis(270,f, a, b);
+    val = GaussQuadrature(750,f, a, b);
     toc
-elseif (  k==27 )
+elseif (  k==19 )
     tic
-    val = ClenshawCurtis(600,f, a, b );
+    val = GaussQuadrature(300,f, a, b);
     toc
-elseif ( k == 29  )
+elseif (  k== 16 )
     tic
-    val = ClenshawCurtis(4600,f, a, b );
+    val = GaussQuadrature(261,f, a, b);
     toc
-elseif ( k==2 || k==4 || k==17)
+elseif ( k==23)
+    tic
+    val = GaussQuadrature(195, f, a, 40);
+    toc
+elseif ( k==23)
+    tic
+    val = AdaptiveSimpsonwithendinfcheck(f, a, b, 10^(-1));
+    toc
+elseif ( k==2 || k==4 || k==14)
     tic
     val = AdaptiveSimpson(f, a, b, 10^(-16));
     toc
-elseif ( k==14  || k==30 )
-    tic
-    quad(f, a, b, 10^(-16))
-    toc
-%{
-elseif ( k==31 )
-    tic
-    quad(f, a, b,10^(-16))
-    quadgk(f, a, b,'AbsTol', 10^(-17))
-    ClenshawCurtis(2000,f,a,b)
-    val = AdaptiveSimpson(f, a, b, 10^(-16));
-    toc
-%}
 else
     fprintf('User has not yet defined a quadrature');
     val = NaN;
@@ -139,6 +135,15 @@ end
 
 end
 
+function val = GaussQuadrature(p, f, a, b )
+[x,c]=legpts(p);
+d=b-a;
+c=c*d/2;
+x=(d*x+b+a)/2;
+val = c*f(x);
+end
+
+%{
 function val = ClenshawCurtis(p, f, a, b )
 format long;
 [x,c]=chebpts(p);
@@ -147,10 +152,23 @@ c=c*d/2;
 x=(d*x+b+a)/2;
 val = c*f(x);
 end
+%}
 
 function s0 = AdaptiveSimpson(f, a, b, tol)
 
 format long;
+if (a==inf) 
+    a=2^(52);
+end
+if (a==-inf) 
+    a=-2^(52);
+end
+if (b==inf) 
+    b=2^(52);
+end
+if (b==-inf) 
+    b=-2^(52);
+end
 m=(a+b)/2;
 fm=f(m);
 fa=f(a);
@@ -159,6 +177,8 @@ midam=(m+a)/2;
 midmb=(m+b)/2;
 fmidam=f(midam);
 fmidmb=f(midmb);
+
+
 
 if (isnan(fm)==1 || isfinite(fm)==0)
     fm=f(m+2^(-53));
@@ -185,12 +205,47 @@ end
 s0= (b-a)/6 * (fa+4*fm+fb);
 s1= (m-a)/6 * (fa+4*fmidam+fm);
 s2= (b-m)/6 * (fm+4*fmidmb+fb);
-errorestimate = abs(1/15* (s1+s2-s0))
+errorestimate = abs(1/15* (s1+s2-s0));
 if (errorestimate < tol)
-    fprintf('this happened')
     s0=s1+s2;
 else
     s0=AdaptiveSimpson(f,a,m,tol/2) + AdaptiveSimpson(f,m,b,tol/2);
+end
+end
+
+function s0 = AdaptiveSimpsonwithendinfcheck(f, a, b, tol)
+
+format long;
+if (a==inf) 
+    a=2^(52);
+end
+if (a==-inf) 
+    a=-2^(52);
+end
+if (b==-inf) 
+    b=-2^(52);
+end
+if (b==inf) 
+    b=2^(52);
+end
+
+m=(a+b)/2;
+fm=f(m);
+fa=f(a);
+fb=f(b);
+midam=(m+a)/2;
+midmb=(m+b)/2;
+fmidam=f(midam);
+fmidmb=f(midmb);
+
+s0= (b-a)/6 * (fa+4*fm+fb);
+s1= (m-a)/6 * (fa+4*fmidam+fm);
+s2= (b-m)/6 * (fm+4*fmidmb+fb);
+errorestimate = abs(1/15* (s1+s2-s0));
+if (errorestimate < tol)
+    s0=s1+s2;
+else
+    s0=AdaptiveSimpsonwithendinfcheck(f,a,m,tol/2) + AdaptiveSimpsonwithendinfcheck(f,m,b,tol/2);
 end
 end
 
@@ -232,15 +287,6 @@ format long;
 d=b-a;
 c=c*d/2;
 x=(d*x+b+a)/2;
-g=f(x);
-val = sum(c.*g);
-end
-%}
-
-%{
-function val = GaussQuadrature(p, f, a, b )
-format long;
-[x,c]=lgwt(p,a,b);
 g=f(x);
 val = sum(c.*g);
 end
