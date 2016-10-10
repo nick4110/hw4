@@ -185,9 +185,9 @@ end
 s0= (b-a)/6 * (fa+4*fm+fb);
 s1= (m-a)/6 * (fa+4*fmidam+fm);
 s2= (b-m)/6 * (fm+4*fmidmb+fb);
-errorestimate = abs(1/15* (s1+s2-s0))
+errorestimate = abs(1/15* (s1+s2-s0));
 if (errorestimate < tol)
-    fprintf('this happened')
+    f
     s0=s1+s2;
 else
     s0=AdaptiveSimpson(f,a,m,tol/2) + AdaptiveSimpson(f,m,b,tol/2);
